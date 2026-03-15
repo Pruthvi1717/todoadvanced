@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>QuantumDo — Task Dimension</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cream:#fdf6ec;--white:#fff;--ink:#1a1205;--ink2:#4a3f2f;--muted:#9e8f7a;--border:#e8ddd0;
+  --sun:#f5a623;--coral:#ff5c4d;--mint:#00c896;--sky:#3b82f6;--lavender:#8b5cf6;
+  --gold:#f59e0b;--gold-light:#fef3c7;--gold-dark:#b45309;
+  --low-bg:#e6faf4;--low-ink:#00a678;--med-bg:#fff4e0;--med-ink:#d97706;--high-bg:#fff0ee;--high-ink:#e63025;
+  --archive-bg:#f3f0ff;--archive-ink:#6d28d9;
+  --heat0:#eae4d9;--heat1:#c6f0dd;--heat2:#6ee8b0;--heat3:#22c77a;--heat4:#10864e;
+  --shadow-sm:0 2px 8px rgba(26,18,5,.06);--shadow-md:0 8px 28px rgba(26,18,5,.10);--shadow-lg:0 20px 60px rgba(26,18,5,.14);
+  --radius:16px;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+.blob{position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:0;opacity:.35;animation:blobDrift 18s ease-in-out infinite alternate;}
+.blob1{width:480px;height:480px;background:#fcd475;top:-160px;right:-140px;}
+.blob2{width:360px;height:360px;background:#ffa07a;bottom:-100px;left:-120px;animation-delay:-6s;}
+.blob3{width:260px;height:260px;background:#a8eddb;top:45%;left:30%;animation-delay:-12s;opacity:.22;}
+@keyframes blobDrift{from{transform:translate(0,0) scale(1);}to{transform:translate(24px,18px) scale(1.08);}}
+.app{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:48px 24px 100px;}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+header{display:grid;grid-template-columns:1fr auto;align-items:start;gap:16px;margin-bottom:32px;}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--sun);color:#fff;font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:12px;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(38px,6vw,62px);font-weight:900;line-height:.95;color:var(--ink);letter-spacing:-1px;}
+h1 em{font-style:italic;color:var(--coral);}
+.subhead{font-size:13px;color:var(--muted);margin-top:10px;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.db-pill{display:flex;align-items:center;gap:7px;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;box-shadow:var(--shadow-sm);white-space:nowrap;}
+.db-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.db-dot.connected{background:var(--mint);box-shadow:0 0 0 3px rgba(0,200,150,.2);}
+.db-dot.error{background:var(--coral);box-shadow:0 0 0 3px rgba(255,92,77,.2);}
+.hdr-btn{display:flex;align-items:center;gap:6px;background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--sky);text-transform:uppercase;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-sm);white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.hdr-btn:hover{border-color:var(--sky);background:#f0f9ff;}
+.hdr-btn.purple{color:var(--lavender);border-color:#d8d0f5;}
+.hdr-btn.purple:hover{background:var(--archive-bg);border-color:var(--lavender);}
+
+/* ── Coin Banner ─────────────────────────────────────────────────────── */
+.coin-banner{background:linear-gradient(135deg,#fef9ee,#fef3c7);border:1.5px solid #fcd475;border-radius:20px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm);}
+.coin-icon-big{font-size:36px;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(245,158,11,.4));}
+.coin-info{flex:1;min-width:0;}
+.coin-balance-row{display:flex;align-items:baseline;gap:8px;}
+.coin-balance-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:var(--gold-dark);line-height:1;}
+.coin-balance-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);}
+.coin-sub{font-size:11px;color:var(--med-ink);margin-top:3px;}
+.coin-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.coin-chip{display:flex;align-items:center;gap:4px;background:var(--white);border:1.5px solid #fcd475;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;color:var(--gold-dark);}
+.coin-chip.streak{border-color:#fb923c;color:#9a3412;}
+.coin-chip.today{border-color:var(--mint);color:var(--low-ink);}
+.coin-breakdown{display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+.coin-rate{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:var(--muted);}
+.coin-dot{width:7px;height:7px;border-radius:50%;}
+.coin-history-btn{background:var(--gold-light);border:1.5px solid #fcd475;color:var(--gold-dark);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;padding:6px 14px;border-radius:10px;cursor:pointer;transition:all .2s;letter-spacing:.5px;}
+.coin-history-btn:hover{background:#fef3c7;border-color:var(--gold);}
+
+/* ── Stats ───────────────────────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.stat-card{background:var(--white);border-radius:var(--radius);padding:16px 12px 12px;box-shadow:var(--shadow-sm);border:1px solid var(--border);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:default;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-card.clickable{cursor:pointer;}
+.stat-card .accent-stripe{position:absolute;bottom:0;left:0;right:0;height:4px;border-radius:0 0 var(--radius) var(--radius);}
+.stat-card:nth-child(1) .accent-stripe{background:var(--sun);}
+.stat-card:nth-child(2) .accent-stripe{background:var(--mint);}
+.stat-card:nth-child(3) .accent-stripe{background:var(--sky);}
+.stat-card:nth-child(4) .accent-stripe{background:var(--coral);}
+.stat-card:nth-child(5) .accent-stripe{background:var(--lavender);}
+.stat-num{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;line-height:1;color:var(--ink);}
+.stat-label{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+
+/* ── Heatmap ─────────────────────────────────────────────────────────── */
+.heatmap-card{background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:20px 22px 16px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+.heatmap-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;}
+.heatmap-title h3{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--ink);}
+.heatmap-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.heatmap-stats{display:flex;gap:16px;flex-wrap:wrap;}
+.hstat{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.hstat-num{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--ink);line-height:1;}
+.hstat-label{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.heatmap-months{display:flex;gap:0;margin-bottom:3px;padding-left:28px;overflow:hidden;}
+.hmonth{font-size:9px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
+.heatmap-body{display:flex;gap:4px;}
+.heatmap-days-col{display:flex;flex-direction:column;gap:3px;margin-right:4px;padding-top:1px;}
+.hday-label{font-size:8px;color:var(--muted);font-weight:600;height:11px;display:flex;align-items:center;}
+.heatmap-grid{display:flex;gap:3px;overflow-x:auto;flex:1;padding-bottom:2px;}
+.heatmap-grid::-webkit-scrollbar{height:3px;}
+.heatmap-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.hweek{display:flex;flex-direction:column;gap:3px;}
+.hcell{width:11px;height:11px;border-radius:2px;cursor:pointer;transition:transform .15s;position:relative;flex-shrink:0;}
+.hcell:hover{transform:scale(1.6);z-index:10;}
+.hcell[data-count="0"]{background:var(--heat0);}
+.hcell[data-level="1"]{background:var(--heat1);}
+.hcell[data-level="2"]{background:var(--heat2);}
+.hcell[data-level="3"]{background:var(--heat3);}
+.hcell[data-level="4"]{background:var(--heat4);}
+.heatmap-legend{display:flex;align-items:center;gap:5px;margin-top:8px;justify-content:flex-end;}
+.heatmap-legend span{font-size:9px;color:var(--muted);}
+.leg-cell{width:10px;height:10px;border-radius:2px;}
+.h-tooltip{position:fixed;background:var(--ink);color:#fff;font-size:10px;font-weight:600;padding:5px 9px;border-radius:7px;pointer-events:none;z-index:9999;white-space:nowrap;transform:translate(-50%,-130%);transition:opacity .15s;opacity:0;}
+.h-tooltip.show{opacity:1;}
+
+/* ── Progress ────────────────────────────────────────────────────────── */
+.progress-section{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.progress-track{flex:1;height:8px;background:var(--border);border-radius:10px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--sun),var(--coral));transition:width .7s cubic-bezier(.4,0,.2,1);}
+.progress-label{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;min-width:60px;text-align:right;}
+.kbd-hint{display:flex;gap:8px;align-items:center;}
+.kbd{display:inline-flex;align-items:center;background:var(--cream);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--muted);padding:1px 5px;font-family:monospace;}
+
+/* ── Input card ──────────────────────────────────────────────────────── */
+.input-card{background:var(--white);border-radius:20px;padding:22px;box-shadow:var(--shadow-md);border:1px solid var(--border);margin-bottom:20px;}
+.input-card-label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.main-row{display:flex;gap:10px;align-items:center;background:var(--cream);border:2px solid var(--border);border-radius:14px;padding:6px 6px 6px 18px;transition:border-color .25s,box-shadow .25s;margin-bottom:14px;}
+.main-row:focus-within{border-color:var(--sun);box-shadow:0 0 0 4px rgba(245,166,35,.12);}
+.main-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);font-weight:500;caret-color:var(--sun);}
+.main-input::placeholder{color:var(--muted);font-weight:400;}
+.add-btn{background:var(--coral);color:#fff;border:none;border-radius:10px;width:44px;height:44px;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;flex-shrink:0;}
+.add-btn:hover{background:#e64a3b;box-shadow:0 6px 20px rgba(255,92,77,.38);transform:scale(1.04);}
+.add-btn:active{transform:scale(.96);}
+.meta-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.meta-field{display:flex;flex-direction:column;gap:4px;}
+.meta-field label{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.meta-select,.meta-input{background:var(--cream);border:1.5px solid var(--border);border-radius:10px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:9px 12px;outline:none;transition:border-color .2s;width:100%;}
+.meta-select:focus,.meta-input:focus{border-color:var(--sun);}
+
+/* ── Filters ─────────────────────────────────────────────────────────── */
+.filters-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+.filter-btn{background:var(--white);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;padding:7px 16px;cursor:pointer;transition:all .2s;}
+.filter-btn:hover{border-color:var(--sun);color:var(--sun);background:#fff8ee;}
+.filter-btn.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+.filter-btn.archive-btn{color:var(--lavender);border-color:#d8d0f5;}
+.filter-btn.archive-btn:hover,.filter-btn.archive-btn.active{background:var(--lavender);border-color:var(--lavender);color:#fff;}
+.filter-btn.focus-btn{color:var(--coral);border-color:#ffc4be;}
+.filter-btn.focus-btn.active{background:var(--coral);border-color:var(--coral);color:#fff;}
+.search-wrap{margin-left:auto;position:relative;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none;}
+.search-input{background:var(--white);border:1.5px solid var(--border);border-radius:20px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 14px 7px 32px;outline:none;width:160px;transition:border-color .2s,width .3s;font-weight:500;}
+.search-input:focus{border-color:var(--sun);width:210px;}
+
+/* ── Section label ───────────────────────────────────────────────────── */
+.section-label{display:flex;align-items:center;gap:12px;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.section-label::after{content:'';flex:1;height:1.5px;background:var(--border);border-radius:2px;}
+
+/* ── Todo items ──────────────────────────────────────────────────────── */
+#todo-list{display:flex;flex-direction:column;gap:10px;}
+.todo-item{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);display:flex;align-items:flex-start;gap:14px;padding:16px 18px;transition:all .25s cubic-bezier(.4,0,.2,1);position:relative;animation:itemIn .3s ease forwards;box-shadow:var(--shadow-sm);}
+@keyframes itemIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.todo-item:hover{border-color:#d0c4b4;box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.todo-item.archived-item{background:#faf8ff;border-color:#d8d0f5;}
+.todo-item.archived-item .todo-text{text-decoration:line-through;color:var(--muted);}
+.todo-item.carried-over{border-left:3px solid var(--sky);}
+.todo-item.focus-urgent{border-color:#fca5a5;background:#fff8f8;}
+
+.priority-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:6px;cursor:pointer;transition:transform .15s;}
+.priority-dot:hover{transform:scale(1.4);}
+.priority-dot.low{background:var(--mint);box-shadow:0 0 0 3px rgba(0,200,150,.15);}
+.priority-dot.medium{background:var(--sun);box-shadow:0 0 0 3px rgba(245,166,35,.18);}
+.priority-dot.high{background:var(--coral);box-shadow:0 0 0 3px rgba(255,92,77,.18);}
+
+.todo-check{width:22px;height:22px;border:2px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px;transition:all .2s;background:var(--cream);}
+.todo-check:hover{border-color:var(--sun);background:#fff9ee;}
+.todo-check.checked{background:var(--mint);border-color:var(--mint);}
+.todo-check.checked::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
+
+.todo-content{flex:1;min-width:0;}
+.todo-text{font-size:14px;font-weight:500;color:var(--ink);line-height:1.5;word-break:break-word;}
+.carried-over-badge{font-size:9px;font-weight:700;background:#f0f9ff;color:var(--sky);padding:2px 8px;border-radius:10px;letter-spacing:1px;text-transform:uppercase;margin-left:6px;vertical-align:middle;}
+.archived-date{font-size:10px;color:var(--lavender);font-weight:600;margin-top:4px;}
+.notes-preview{font-size:11px;color:var(--muted);margin-top:4px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:440px;}
+/* coin badge per task */
+.task-coin-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;background:var(--gold-light);color:var(--gold-dark);padding:2px 8px;border-radius:10px;border:1px solid #fcd475;margin-left:6px;vertical-align:middle;}
+
+.todo-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chip{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.chip-cat{background:#eef2ff;color:var(--lavender);}
+.chip-low{background:var(--low-bg);color:var(--low-ink);}
+.chip-medium{background:var(--med-bg);color:var(--med-ink);}
+.chip-high{background:var(--high-bg);color:var(--high-ink);}
+.chip-tag{background:var(--cream);color:var(--ink2);border:1px solid var(--border);}
+.chip-date{background:#f0f9ff;color:var(--sky);}
+.chip-overdue{background:var(--high-bg);color:var(--high-ink);}
+.chip-aging{background:#fff4e0;color:#d97706;border:1px solid #fcd475;}
+
+/* Subtasks */
+.subtasks-section{margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
+.subtask-progress-wrap{height:4px;background:var(--border);border-radius:4px;margin-bottom:8px;overflow:hidden;}
+.subtask-progress-bar{height:100%;background:linear-gradient(90deg,var(--mint),#00e6a8);border-radius:4px;transition:width .4s;}
+.subtask-list{display:flex;flex-direction:column;gap:4px;margin-bottom:6px;}
+.subtask-item{display:flex;align-items:center;gap:8px;padding:2px 0;}
+.subtask-check{width:16px;height:16px;border:1.5px solid var(--border);border-radius:4px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--cream);}
+.subtask-check:hover{border-color:var(--mint);}
+.subtask-check.checked{background:var(--mint);border-color:var(--mint);}
+.subtask-check.checked::after{content:'✓';color:#fff;font-size:9px;font-weight:700;}
+.subtask-text{font-size:12px;color:var(--ink2);flex:1;}
+.subtask-text.done{text-decoration:line-through;color:var(--muted);}
+.subtask-del{font-size:11px;color:var(--muted);cursor:pointer;opacity:0;transition:opacity .2s;padding:2px 4px;border-radius:4px;}
+.subtask-item:hover .subtask-del{opacity:1;}
+.subtask-del:hover{color:var(--coral);background:var(--high-bg);}
+.subtask-count{font-size:10px;color:var(--muted);font-weight:600;}
+.add-subtask-toggle{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--sky);cursor:pointer;font-weight:600;margin-top:4px;}
+.add-subtask-row{display:none;gap:6px;margin-top:6px;}
+.add-subtask-row.visible{display:flex;}
+.add-subtask-input{flex:1;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);padding:6px 10px;outline:none;}
+.add-subtask-input:focus{border-color:var(--sky);}
+.add-subtask-confirm{background:var(--sky);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;}
+.add-subtask-cancel{background:var(--cream);border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;color:var(--muted);}
+
+.todo-actions{display:flex;gap:5px;opacity:0;transition:opacity .2s;flex-shrink:0;}
+.todo-item:hover .todo-actions{opacity:1;}
+.act-btn{background:var(--cream);border:1.5px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all .18s;}
+.act-btn:hover{background:#fff3e0;border-color:var(--sun);color:var(--sun);}
+.act-btn.del:hover{background:var(--high-bg);border-color:var(--coral);color:var(--coral);}
+.act-btn.hist:hover{background:#eef2ff;border-color:var(--lavender);color:var(--lavender);}
+.act-btn.restore:hover{background:var(--low-bg);border-color:var(--mint);color:var(--mint);}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-illustration{font-size:52px;margin-bottom:14px;display:block;}
+.empty-state p{font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+
+/* Bottom bar */
+.bottom-bar{display:flex;align-items:center;gap:10px;margin-top:28px;padding-top:20px;border-top:1.5px solid var(--border);flex-wrap:wrap;}
+.bottom-count{font-size:12px;font-weight:500;color:var(--muted);}
+.clear-btn{background:transparent;border:1.5px solid #f5c3be;color:var(--coral);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;padding:8px 16px;border-radius:10px;cursor:pointer;transition:all .2s;}
+.clear-btn:hover{background:var(--high-bg);}
+.export-btn{display:flex;align-items:center;gap:6px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:var(--sky);cursor:pointer;transition:all .2s;margin-left:auto;}
+.export-btn:hover{border-color:var(--sky);background:#f0f9ff;}
+
+/* ── Modals ──────────────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(253,246,236,.78);backdrop-filter:blur(10px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border:1.5px solid var(--border);border-radius:24px;padding:30px;width:100%;max-width:500px;box-shadow:var(--shadow-lg);transform:scale(.95) translateY(12px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.modal-overlay.open .modal{transform:scale(1) translateY(0);}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.modal h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--ink);}
+.modal-subtitle{font-size:12px;color:var(--muted);margin-top:3px;}
+.modal-close{background:var(--cream);border:1.5px solid var(--border);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:14px;transition:all .2s;}
+.modal-close:hover{background:var(--high-bg);color:var(--coral);border-color:var(--coral);}
+.modal-field{margin-bottom:14px;}
+.modal-field label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:11px 14px;outline:none;transition:border-color .2s;resize:none;}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--sun);box-shadow:0 0 0 3px rgba(245,166,35,.1);}
+.modal-field input[type="password"]:focus{border-color:var(--lavender);box-shadow:0 0 0 3px rgba(139,92,246,.1);}
+.modal-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.btn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:11px 22px;border-radius:10px;cursor:pointer;transition:all .2s;border:none;}
+.btn-ghost{background:var(--cream);border:1.5px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--ink2);color:var(--ink);}
+.btn-save{background:var(--coral);color:#fff;}
+.btn-save:hover{background:#e64a3b;}
+.btn-purple{background:var(--lavender);color:#fff;}
+.btn-purple:hover{background:#7c3aed;}
+.btn-mint{background:var(--mint);color:#fff;}
+.btn-mint:hover{background:#00a678;}
+.btn-danger{background:var(--coral);color:#fff;}
+.btn-danger:hover{background:#c0392b;}
+
+.lock-icon{font-size:40px;text-align:center;margin-bottom:14px;}
+.passcode-error{font-size:12px;color:var(--high-ink);background:var(--high-bg);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:none;}
+.passcode-tabs{display:flex;gap:6px;margin-bottom:18px;}
+.ptab{flex:1;padding:8px;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;color:var(--muted);text-align:center;}
+.ptab.active{background:var(--lavender);border-color:var(--lavender);color:#fff;}
+.ptab-panel{display:none;}.ptab-panel.active{display:block;}
+#history-modal{max-width:560px;}
+.history-title-text{font-size:13px;color:var(--muted);font-weight:400;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px;}
+.history-list{max-height:440px;overflow-y:auto;display:flex;flex-direction:column;}
+.history-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);position:relative;}
+.history-item:last-child{border-bottom:none;}
+.history-item:not(:last-child)::before{content:'';position:absolute;left:15px;top:34px;bottom:-14px;width:2px;background:var(--border);}
+.h-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:2px solid var(--border);}
+.h-icon.created{background:#fff8ee;border-color:#fcd475;}
+.h-icon.completed{background:var(--low-bg);border-color:var(--mint);}
+.h-icon.reopened{background:#f0f9ff;border-color:var(--sky);}
+.h-icon.edited,.h-icon.category_changed,.h-icon.tags_changed{background:#eef2ff;border-color:var(--lavender);}
+.h-icon.priority_changed{background:var(--med-bg);border-color:var(--sun);}
+.h-icon.due_date_changed,.h-icon.day_rolled{background:#f0f9ff;border-color:var(--sky);}
+.h-icon.notes_changed{background:var(--cream);}
+.h-icon.archived,.h-icon.unarchived{background:var(--archive-bg);border-color:var(--lavender);}
+.h-body{flex:1;min-width:0;}
+.h-desc{font-size:13px;font-weight:500;color:var(--ink);line-height:1.4;}
+.h-time{font-size:10px;color:var(--muted);margin-top:3px;}
+.h-diff{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.h-diff-old{font-size:10px;background:var(--high-bg);color:var(--high-ink);padding:2px 8px;border-radius:6px;text-decoration:line-through;}
+.h-diff-new{font-size:10px;background:var(--low-bg);color:var(--low-ink);padding:2px 8px;border-radius:6px;}
+.history-empty,.history-loading{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+.lock-screen{text-align:center;padding:24px 20px;}
+.lock-screen .lock-big{font-size:44px;margin-bottom:10px;}
+.lock-screen p{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6;}
+.lock-input-row{display:flex;gap:8px;}
+.lock-input-row input{flex:1;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px 14px;outline:none;}
+.lock-input-row input:focus{border-color:var(--lavender);}
+.lock-input-row button{background:var(--lavender);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.lock-error{font-size:11px;color:var(--high-ink);margin-top:8px;min-height:16px;}
+.confirm-icon{font-size:44px;text-align:center;margin-bottom:12px;}
+.confirm-text{font-size:14px;color:var(--ink2);text-align:center;line-height:1.6;margin-bottom:4px;}
+.confirm-subtext{font-size:12px;color:var(--muted);text-align:center;}
+
+/* Coin history modal */
+#coin-modal{max-width:480px;}
+.coin-ledger{max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:0;}
+.coin-entry{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.coin-entry:last-child{border-bottom:none;}
+.coin-entry-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.coin-entry.positive .coin-entry-icon{background:var(--gold-light);border:2px solid #fcd475;}
+.coin-entry.negative .coin-entry-icon{background:var(--high-bg);border:2px solid #fca5a5;}
+.coin-entry-body{flex:1;min-width:0;}
+.coin-entry-note{font-size:12px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.coin-entry-time{font-size:10px;color:var(--muted);margin-top:2px;}
+.coin-entry-delta{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;white-space:nowrap;}
+.coin-entry.positive .coin-entry-delta{color:var(--gold-dark);}
+.coin-entry.negative .coin-entry-delta{color:var(--high-ink);}
+
+/* Day banner */
+.day-banner{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1.5px solid #bae6fd;border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;font-size:13px;color:#0369a1;font-weight:500;}
+.day-banner .banner-close{margin-left:auto;background:none;border:none;color:#0369a1;cursor:pointer;font-size:16px;opacity:.6;}
+
+/* Toasts */
+.toast-wrap{position:fixed;bottom:28px;right:28px;display:flex;flex-direction:column;gap:8px;z-index:9998;}
+.toast{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:13px 18px;font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-md);animation:toastIn .3s ease,toastOut .3s ease 2.7s forwards;}
+.toast.ok{border-left:4px solid var(--mint);}
+.toast.err{border-left:4px solid var(--coral);}
+.toast.info{border-left:4px solid var(--sky);}
+.toast.coin{border-left:4px solid var(--gold);}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
+@keyframes toastOut{from{opacity:1;}to{opacity:0;transform:translateX(16px);}}
+
+/* Coin pop animation */
+.coin-pop{position:fixed;pointer-events:none;z-index:9999;font-size:18px;font-weight:900;color:var(--gold-dark);animation:coinPop .8s ease forwards;white-space:nowrap;}
+@keyframes coinPop{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-60px) scale(1.3);}}
+
+.confetti-particle{position:fixed;pointer-events:none;z-index:9999;border-radius:2px;}
+
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--cream);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+@media(max-width:700px){.stats-grid{grid-template-columns:repeat(3,1fr);}.meta-row{grid-template-columns:1fr 1fr;}.modal-2col{grid-template-columns:1fr;}.search-wrap{display:none;}h1{font-size:36px;}.coin-banner{flex-wrap:wrap;}.coin-breakdown{align-items:flex-start;}}
+@media(max-width:480px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div>
+<div class="h-tooltip" id="h-tooltip"></div>
+
+<div class="app">
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <div class="eyebrow">✦ QuantumDo</div>
+      <h1>Get Things<br><em>Done.</em></h1>
+      <p class="subhead">Your tasks, beautifully organised.</p>
+    </div>
+    <div class="header-right">
+      <div class="db-pill"><div class="db-dot" id="db-dot"></div><span id="db-label">Connecting</span></div>
+      <button class="hdr-btn" id="new-day-btn">🌅 New Day</button>
+      <button class="hdr-btn purple" id="passcode-btn">🔐 History Lock</button>
+    </div>
+  </header>
+
+  <!-- Day banner -->
+  <div class="day-banner" id="day-banner" style="display:none;">
+    <span>🌅</span><span id="day-banner-text"></span>
+    <button class="banner-close" onclick="document.getElementById('day-banner').style.display='none'">✕</button>
+  </div>
+
+  <!-- Coin Banner -->
+  <div class="coin-banner">
+    <div class="coin-icon-big">🪙</div>
+    <div class="coin-info">
+      <div class="coin-balance-row">
+        <span class="coin-balance-num" id="coin-balance">0</span>
+        <span class="coin-balance-label">Coins</span>
+      </div>
+      <div class="coin-sub" id="coin-sub">Complete tasks to earn coins!</div>
+      <div class="coin-chips">
+        <div class="coin-chip streak" id="streak-chip">🔥 0 day streak</div>
+        <div class="coin-chip today" id="today-chip">✦ +0 today</div>
+      </div>
+    </div>
+    <div class="coin-breakdown">
+      <div class="coin-rate"><div class="coin-dot" style="background:var(--mint)"></div>Low = +5🪙</div>
+      <div class="coin-rate"><div class="coin-dot" style="background:var(--sun)"></div>Medium = +10🪙</div>
+      <div class="coin-rate"><div class="coin-dot" style="background:var(--coral)"></div>High = +20🪙</div>
+      <div class="coin-rate">☑ All subtasks = +5🪙</div>
+      <button class="coin-history-btn" id="coin-history-btn">View History</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Active</div><div class="accent-stripe"></div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-done">0</div><div class="stat-label">In Vault</div><div class="accent-stripe"></div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-pending">0</div><div class="stat-label">Pending</div><div class="accent-stripe"></div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-high">0</div><div class="stat-label">High Priority</div><div class="accent-stripe"></div></div>
+    <div class="stat-card clickable" id="stat-archived-card"><div class="stat-num" id="stat-archived">0</div><div class="stat-label">Today Done</div><div class="accent-stripe"></div></div>
+  </div>
+
+  <!-- Heatmap -->
+  <div class="heatmap-card">
+    <div class="heatmap-header">
+      <div class="heatmap-title">
+        <h3>📊 Completion Activity</h3>
+        <div class="heatmap-meta" id="heatmap-subtitle">Loading…</div>
+      </div>
+      <div class="heatmap-stats" id="heatmap-stats"></div>
+    </div>
+    <div class="heatmap-months" id="heatmap-months"></div>
+    <div class="heatmap-body">
+      <div class="heatmap-days-col" id="heatmap-daycol"></div>
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+    </div>
+    <div class="heatmap-legend">
+      <span>Less</span>
+      <div class="leg-cell" style="background:var(--heat0)"></div>
+      <div class="leg-cell" style="background:var(--heat1)"></div>
+      <div class="leg-cell" style="background:var(--heat2)"></div>
+      <div class="leg-cell" style="background:var(--heat3)"></div>
+      <div class="leg-cell" style="background:var(--heat4)"></div>
+      <span>More</span>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-label" id="progress-label">0% done</div>
+    <div class="kbd-hint"><span class="kbd">/</span><span style="font-size:10px;color:var(--muted)">search</span><span class="kbd">n</span><span style="font-size:10px;color:var(--muted)">new</span></div>
+  </div>
+
+  <!-- Input Card -->
+  <div class="input-card">
+    <div class="input-card-label">Add New Task</div>
+    <div class="main-row">
+      <input class="main-input" id="todo-input" type="text" placeholder="What needs to be done?" autocomplete="off"/>
+      <button class="add-btn" id="add-btn">+</button>
+    </div>
+    <div class="meta-row">
+      <div class="meta-field"><label>Priority</label><select class="meta-select" id="priority-select"><option value="low">Low (+5🪙)</option><option value="medium" selected>Medium (+10🪙)</option><option value="high">High (+20🪙)</option></select></div>
+      <div class="meta-field"><label>Category</label><input class="meta-input" id="category-input" type="text" placeholder="e.g. Work"/></div>
+      <div class="meta-field"><label>Due Date</label><input class="meta-input" id="due-input" type="date"/></div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-row">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="pending">Pending</button>
+    <button class="filter-btn archive-btn" data-filter="archived">🗄️ Vault</button>
+    <button class="filter-btn" data-filter="high">🔥 High</button>
+    <button class="filter-btn focus-btn" data-filter="focus">🎯 Focus</button>
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input class="search-input" id="search-input" type="text" placeholder="Search tasks..."/>
+    </div>
+  </div>
+
+  <div class="section-label" id="section-label">Tasks</div>
+  <div id="todo-list"></div>
+
+  <div class="bottom-bar">
+    <span class="bottom-count" id="bottom-count">0 tasks</span>
+    <button class="export-btn" id="export-btn">📋 Export</button>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-overlay">
+  <div class="modal">
+    <div class="modal-header"><h2>Edit Task</h2><button class="modal-close" data-close="edit-overlay">✕</button></div>
+    <div class="modal-field"><label>Task</label><input id="edit-text" type="text"/></div>
+    <div class="modal-2col">
+      <div class="modal-field"><label>Priority</label><select id="edit-priority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>
+      <div class="modal-field"><label>Category</label><input id="edit-category" type="text"/></div>
+    </div>
+    <div class="modal-2col">
+      <div class="modal-field"><label>Due Date</label><input id="edit-due" type="date"/></div>
+      <div class="modal-field"><label>Tags (comma-separated)</label><input id="edit-tags" type="text" placeholder="design, urgent"/></div>
+    </div>
+    <div class="modal-field"><label>Notes</label><textarea id="edit-notes" rows="3" placeholder="Any extra details..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="edit-overlay">Cancel</button>
+      <button class="btn btn-save" id="modal-save">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Archive Confirm -->
+<div class="modal-overlay" id="archive-confirm-overlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header"><h2>Archive Task</h2><button class="modal-close" data-close="archive-confirm-overlay">✕</button></div>
+    <div class="confirm-icon">🗄️</div>
+    <p class="confirm-text">Move this task to the <strong>Vault</strong>?</p>
+    <p class="confirm-subtext">You can restore it anytime. Full history preserved.</p>
+    <div class="modal-footer" style="justify-content:center;margin-top:18px;">
+      <button class="btn btn-ghost" data-close="archive-confirm-overlay">Cancel</button>
+      <button class="btn btn-purple" id="archive-confirm-btn">Yes, Archive It</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restore Confirm -->
+<div class="modal-overlay" id="restore-confirm-overlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header"><h2>Restore Task</h2><button class="modal-close" data-close="restore-confirm-overlay">✕</button></div>
+    <div class="confirm-icon">↩️</div>
+    <p class="confirm-text">Restore this task to your active list?</p>
+    <p class="confirm-subtext">It will return as a pending task tagged to today.</p>
+    <div class="modal-footer" style="justify-content:center;margin-top:18px;">
+      <button class="btn btn-ghost" data-close="restore-confirm-overlay">Cancel</button>
+      <button class="btn btn-mint" id="restore-confirm-btn">↩ Restore</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vault Delete Confirm -->
+<div class="modal-overlay" id="vault-delete-overlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header"><h2>Delete Forever</h2><button class="modal-close" data-close="vault-delete-overlay">✕</button></div>
+    <div class="confirm-icon">🗑️</div>
+    <p class="confirm-text">This will <strong>permanently delete</strong> this task.</p>
+    <p class="confirm-subtext">All history will be gone. This cannot be undone.</p>
+    <div class="modal-footer" style="justify-content:center;margin-top:18px;">
+      <button class="btn btn-ghost" data-close="vault-delete-overlay">Cancel</button>
+      <button class="btn btn-danger" id="vault-delete-confirm-btn">🗑 Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Passcode Modal -->
+<div class="modal-overlay" id="passcode-overlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header"><div><h2>History Lock</h2><div class="modal-subtitle">Password stored securely in MongoDB</div></div><button class="modal-close" data-close="passcode-overlay">✕</button></div>
+    <div class="lock-icon">🔐</div>
+    <div class="passcode-tabs">
+      <button class="ptab active" data-tab="set-tab">Set Password</button>
+      <button class="ptab" data-tab="change-tab">Change Password</button>
+    </div>
+    <div class="ptab-panel active" id="set-tab">
+      <div class="passcode-error" id="set-error"></div>
+      <div class="modal-field"><label>New Password (min 4 chars)</label><input id="set-passcode" type="password" placeholder="Enter password"/></div>
+      <div class="modal-footer"><button class="btn btn-purple" id="set-passcode-btn">Set Password</button></div>
+    </div>
+    <div class="ptab-panel" id="change-tab">
+      <div class="passcode-error" id="change-error"></div>
+      <div class="modal-field"><label>Current Password</label><input id="change-current" type="password" placeholder="Current password"/></div>
+      <div class="modal-field"><label>New Password (min 4 chars)</label><input id="change-new" type="password" placeholder="New password"/></div>
+      <div class="modal-footer"><button class="btn btn-purple" id="change-passcode-btn">Change Password</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="history-overlay">
+  <div class="modal" id="history-modal">
+    <div class="modal-header">
+      <div><h2>Task History</h2><div class="history-title-text" id="history-task-title"></div></div>
+      <button class="modal-close" data-close="history-overlay">✕</button>
+    </div>
+    <div id="history-body"></div>
+  </div>
+</div>
+
+<!-- Coin History Modal -->
+<div class="modal-overlay" id="coin-overlay">
+  <div class="modal" id="coin-modal">
+    <div class="modal-header">
+      <div><h2>🪙 Coin History</h2><div class="modal-subtitle" id="coin-modal-sub">Recent transactions</div></div>
+      <button class="modal-close" data-close="coin-overlay">✕</button>
+    </div>
+    <div class="coin-ledger" id="coin-ledger-list"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API = '/api/todos';
+let todos = [], currentFilter = 'all', searchQuery = '', editingId = null, archivingId = null, restoringId = null, vaultDeletingId = null;
+let historyPasscode = null;
+let cachedCoinBalance = 0;
+
+// ── Toast ───────────────────────────────────────────────────────────────────
+function toast(msg, type='ok') {
+  const icons = { ok:'✦', err:'✕', info:'◎', coin:'🪙' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]||'◎'}</span>${msg}`;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+// ── Coin pop animation ──────────────────────────────────────────────────────
+function coinPop(x, y, delta) {
+  const el = document.createElement('div');
+  el.className = 'coin-pop';
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  el.textContent = `+${delta}🪙`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 900);
+}
+
+// ── Confetti ────────────────────────────────────────────────────────────────
+function launchConfetti(x, y) {
+  const colors = ['#f5a623','#ff5c4d','#00c896','#3b82f6','#8b5cf6','#fcd475'];
+  for (let i = 0; i < 22; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-particle';
+    const size = 5 + Math.random() * 6;
+    el.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};`;
+    document.body.appendChild(el);
+    const a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 90;
+    el.animate([
+      { transform:'translate(0,0) scale(1) rotate(0deg)', opacity:1 },
+      { transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d-50}px) scale(0) rotate(${Math.random()*360}deg)`, opacity:0 }
+    ], { duration: 550 + Math.random()*400, easing:'cubic-bezier(0,0.9,0.57,1)', fill:'forwards' }).onfinish = () => el.remove();
+  }
+}
+
+// ── Update coin UI ──────────────────────────────────────────────────────────
+function updateCoinUI(balance, streak, todayEarned) {
+  cachedCoinBalance = balance;
+  document.getElementById('coin-balance').textContent    = balance.toLocaleString();
+  document.getElementById('streak-chip').textContent     = `🔥 ${streak} day streak`;
+  document.getElementById('today-chip').textContent      = `✦ +${todayEarned} today`;
+  const lvl = balance < 50 ? 'Beginner' : balance < 200 ? 'Productive' : balance < 500 ? 'Achiever' : balance < 1000 ? 'Master' : '⭐ Legend';
+  document.getElementById('coin-sub').textContent        = `${lvl} • ${balance} total coins earned`;
+}
+
+// ── DB health ───────────────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const d = await fetch('/api/health').then(r => r.json());
+    const dot = document.getElementById('db-dot'), lbl = document.getElementById('db-label');
+    if (d.db === 'connected') { dot.className='db-dot connected'; lbl.textContent='MongoDB'; }
+    else { dot.className='db-dot error'; lbl.textContent='Disconnected'; }
+  } catch { document.getElementById('db-dot').className='db-dot error'; document.getElementById('db-label').textContent='Offline'; }
+}
+
+// ── Coins ───────────────────────────────────────────────────────────────────
+async function loadCoins() {
+  try {
+    const d = await fetch(`${API}/coins`).then(r => r.json());
+    if (!d.success) return;
+    updateCoinUI(d.balance, d.streak, d.todayEarned);
+    if (d.loginBonus) {
+      toast(`🪙 Daily login bonus! +${d.loginBonus.delta} coins`, 'coin');
+    }
+  } catch {}
+}
+
+// ── Heatmap ─────────────────────────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAY_LABELS = ['','Mon','','Wed','','Fri',''];
+const tooltip = document.getElementById('h-tooltip');
+
+async function loadHeatmap() {
+  try {
+    const d = await fetch(`${API}/stats/heatmap`).then(r => r.json());
+    if (!d.success) return;
+    renderHeatmap(d);
+  } catch {}
+}
+
+function renderHeatmap({ days, totalCompletions, activeDays, maxCount, streak, maxStreak }) {
+  document.getElementById('heatmap-subtitle').textContent = `${totalCompletions} completions in the past year`;
+  document.getElementById('heatmap-stats').innerHTML = `
+    <div class="hstat"><span class="hstat-num">${totalCompletions}</span><span class="hstat-label">Total</span></div>
+    <div class="hstat"><span class="hstat-num">${activeDays}</span><span class="hstat-label">Active Days</span></div>
+    <div class="hstat"><span class="hstat-num">${streak}</span><span class="hstat-label">Streak</span></div>
+    <div class="hstat"><span class="hstat-num">${maxStreak}</span><span class="hstat-label">Best Streak</span></div>`;
+
+  document.getElementById('heatmap-daycol').innerHTML = DAY_LABELS.map(d =>
+    `<div class="hday-label">${d}</div>`).join('');
+
+  // Pad to align with correct weekday
+  const startDow = new Date(days[0].date + 'T00:00:00').getDay();
+  const padded   = [...Array(startDow).fill(null), ...days];
+  const weeks    = [];
+  for (let i = 0; i < padded.length; i += 7) weeks.push(padded.slice(i, i+7));
+
+  const level = c => {
+    if (c === 0) return 0;
+    const r = c / maxCount;
+    if (r <= 0.25) return 1; if (r <= 0.5) return 2; if (r <= 0.75) return 3; return 4;
+  };
+
+  // Month labels
+  const monthsEl = document.getElementById('heatmap-months');
+  monthsEl.innerHTML = '';
+  const seen = {};
+  weeks.forEach((week, wi) => {
+    week.forEach(cell => {
+      if (!cell) return;
+      const mo = parseInt(cell.date.substring(5,7)) - 1;
+      if (!seen[mo]) { seen[mo] = wi; }
+    });
+  });
+  let lastWi = 0;
+  for (let m = 0; m < 12; m++) {
+    if (seen[m] !== undefined) {
+      const span = document.createElement('span');
+      span.className = 'hmonth';
+      span.style.cssText = `min-width:${(seen[m]-lastWi)*14}px;display:inline-block;`;
+      span.textContent = MONTHS[m];
+      monthsEl.appendChild(span);
+      lastWi = seen[m];
+    }
+  }
+
+  const grid = document.getElementById('heatmap-grid');
+  grid.innerHTML = weeks.map(week =>
+    `<div class="hweek">${week.map(cell => {
+      if (!cell) return `<div class="hcell" data-count="0" style="opacity:0;pointer-events:none;"></div>`;
+      const lv = level(cell.count);
+      const label = cell.count === 0 ? 'No completions' : `${cell.count} task${cell.count!==1?'s':''} completed`;
+      return `<div class="hcell" ${lv===0?'data-count="0"':`data-level="${lv}"`} data-date="${cell.date}" title="${label} — ${fmtDate(cell.date)}"></div>`;
+    }).join('')}</div>`
+  ).join('');
+
+  grid.querySelectorAll('.hcell[data-date]').forEach(cell => {
+    cell.addEventListener('mouseenter', () => {
+      const r = cell.getBoundingClientRect();
+      tooltip.textContent = cell.title;
+      tooltip.style.left  = (r.left + r.width/2) + 'px';
+      tooltip.style.top   = r.top + 'px';
+      tooltip.classList.add('show');
+    });
+    cell.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+  });
+}
+
+function fmtDate(str) {
+  return new Date(str + 'T00:00:00').toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+}
+
+// ── Fetch todos ─────────────────────────────────────────────────────────────
+async function fetchTodos() {
+  try {
+    const p = new URLSearchParams();
+    p.set('archived', currentFilter === 'archived' ? 'true' : 'false');
+    if (currentFilter === 'pending') p.set('completed','false');
+    if (currentFilter === 'high')    p.set('priority','high');
+    if (currentFilter === 'focus')   p.set('completed','false');
+    if (searchQuery) p.set('search', searchQuery);
+
+    // For vault, send cached history passcode so server can unlock
+    const headers = {};
+    if (currentFilter === 'archived' && historyPasscode) {
+      headers['x-history-passcode'] = historyPasscode;
+    }
+
+    const resp = await fetch(`${API}?${p}`, { headers });
+    const d    = await resp.json();
+
+    // Server says vault is locked → show inline lock screen
+    if (d.locked) { showVaultLockScreen(); return; }
+    if (!d.success) throw new Error(d.error);
+    todos = d.todos;
+    updateStats(d.stats);
+    render();
+  } catch (e) { toast('Failed to load: ' + e.message, 'err'); }
+}
+
+// ── Vault inline lock screen ─────────────────────────────────────────────────
+function showVaultLockScreen() {
+  document.getElementById('section-label').textContent = 'History Vault 🗄️';
+  document.getElementById('todo-list').innerHTML = `
+    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:40px 32px;text-align:center;box-shadow:var(--shadow-sm);">
+      <div style="font-size:48px;margin-bottom:14px;">🔒</div>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px;">Vault is Locked</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:24px;line-height:1.7;">Enter your history password to view archived tasks.</div>
+      <div style="display:flex;gap:8px;max-width:340px;margin:0 auto;">
+        <input id="vault-inline-input" type="password" placeholder="Enter history password"
+          style="flex:1;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 14px;outline:none;"
+          autocomplete="off"/>
+        <button onclick="unlockVaultInline()"
+          style="background:var(--lavender);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          Unlock
+        </button>
+      </div>
+      <div id="vault-inline-error" style="font-size:11px;color:var(--high-ink);margin-top:8px;min-height:16px;"></div>
+    </div>`;
+  setTimeout(() => {
+    const inp = document.getElementById('vault-inline-input');
+    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') unlockVaultInline(); });
+  }, 50);
+}
+
+async function unlockVaultInline() {
+  const inp = document.getElementById('vault-inline-input');
+  const errEl = document.getElementById('vault-inline-error');
+  if (!inp) return;
+  errEl.textContent = '';
+  const pc = inp.value;
+  try {
+    const d = await fetch(`${API}/passcode/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passcode: pc }),
+    }).then(r => r.json());
+    if (!d.success) { errEl.textContent = '✕ Incorrect password'; return; }
+    historyPasscode = pc;
+    fetchTodos();
+  } catch { errEl.textContent = 'Network error'; }
+}
+
+function updateStats(s) {
+  document.getElementById('stat-total').textContent    = s.total;
+  document.getElementById('stat-done').textContent     = s.completed;
+  document.getElementById('stat-pending').textContent  = s.pending;
+  document.getElementById('stat-high').textContent     = s.high;
+  document.getElementById('stat-archived').textContent = s.todayDone;
+  document.getElementById('bottom-count').textContent  = `${todos.length} task${todos.length!==1?'s':''}`;
+  const pct = s.total > 0 ? Math.round(s.todayDone / Math.max(s.total+s.archived,1) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${s.todayDone} done today`;
+  if (s.coinBalance !== undefined) updateCoinUI(s.coinBalance, 0, 0);
+}
+
+// ── Render ──────────────────────────────────────────────────────────────────
+function render() {
+  const list  = document.getElementById('todo-list');
+  const label = document.getElementById('section-label');
+  const map   = { all:'Active Tasks', pending:'Pending', archived:'History Vault 🗄️', high:'High Priority', focus:'🎯 Focus Mode' };
+  label.textContent = `${map[currentFilter]||'Tasks'} (${todos.length})`;
+
+  let display = [...todos];
+  if (currentFilter === 'focus') {
+    const now = new Date();
+    display.sort((a, b) => {
+      const u = t => (t.dueDate && new Date(t.dueDate)<now ? 10 : 0) + ({high:3,medium:2,low:1}[t.priority]||0);
+      return u(b) - u(a);
+    });
+  }
+  if (!display.length) {
+    const msgs = { archived:'The vault is empty.', focus:'Nothing urgent — enjoy the calm! 🌿' };
+    list.innerHTML = `<div class="empty-state"><span class="empty-illustration">${currentFilter==='archived'?'🗄️':currentFilter==='focus'?'🌿':'🌤️'}</span><p>${msgs[currentFilter]||'No tasks — enjoy the sunshine!'}</p></div>`;
+    return;
+  }
+  list.innerHTML = display.map(t => buildHTML(t)).join('');
+  attachEvents();
+}
+
+const COIN_MAP = { low:5, medium:10, high:20 };
+
+function buildHTML(t) {
+  const due      = t.dueDate ? new Date(t.dueDate) : null;
+  const over     = due && due < new Date();
+  const dateTxt  = due ? due.toLocaleDateString('en-IN', { day:'numeric', month:'short' }) : '';
+  const wasRolled = t.history?.some(h => h.action==='day_rolled');
+  const ageInDays = t.createdAt ? Math.floor((Date.now()-new Date(t.createdAt))/86400000) : 0;
+  const isAging   = !t.archived && ageInDays >= 3;
+
+  let cls = 'todo-item';
+  if (t.archived)  cls += ' archived-item';
+  else if (wasRolled) cls += ' carried-over';
+  if (currentFilter==='focus' && !t.archived && (over||t.priority==='high')) cls += ' focus-urgent';
+
+  const archivedStr = t.archivedAt
+    ? new Date(t.archivedAt).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})
+    : '';
+
+  const notesHtml = t.notes ? `<div class="notes-preview">📝 ${esc(t.notes.substring(0,80))}${t.notes.length>80?'…':''}</div>` : '';
+
+  const subs     = t.subtasks || [];
+  const subsDone = subs.filter(s => s.completed).length;
+  const subsPct  = subs.length > 0 ? Math.round(subsDone/subs.length*100) : 0;
+
+  const subtasksHtml = t.archived ? '' : `
+    <div class="subtasks-section">
+      ${subs.length > 0 ? `
+        <div class="subtask-progress-wrap"><div class="subtask-progress-bar" style="width:${subsPct}%"></div></div>
+        <div class="subtask-list">
+          ${subs.map(s=>`<div class="subtask-item">
+            <div class="subtask-check ${s.completed?'checked':''}" data-sub-toggle="${t._id}|${s._id}"></div>
+            <span class="subtask-text ${s.completed?'done':''}">${esc(s.text)}</span>
+            <span class="subtask-del" data-sub-del="${t._id}|${s._id}">✕</span>
+          </div>`).join('')}
+        </div>
+        <div class="subtask-count">${subsDone}/${subs.length} done</div>` : ''}
+      <div class="add-subtask-toggle" data-sub-add="${t._id}">＋ Add subtask</div>
+      <div class="add-subtask-row" id="sub-input-${t._id}">
+        <input class="add-subtask-input" id="sub-text-${t._id}" placeholder="Subtask…" autocomplete="off"/>
+        <button class="add-subtask-confirm" data-sub-confirm="${t._id}">Add</button>
+        <button class="add-subtask-cancel"  data-sub-cancel="${t._id}">✕</button>
+      </div>
+    </div>`;
+
+  const coinBadge = !t.archived ? `<span class="task-coin-badge">+${COIN_MAP[t.priority]||5}🪙</span>` : '';
+
+  let actions = '';
+  if (!t.archived) {
+    actions = `
+      <button class="act-btn hist"    data-hist="${t._id}"    title="History">⏱</button>
+      <button class="act-btn"         data-edit="${t._id}"    title="Edit">✎</button>
+      <button class="act-btn"         data-archive="${t._id}" title="Archive">🗄</button>
+      <button class="act-btn del"     data-del="${t._id}"     title="Delete">✕</button>`;
+  } else {
+    actions = `
+      <button class="act-btn restore" data-restore="${t._id}"   title="Restore">↩</button>
+      <button class="act-btn hist"    data-hist="${t._id}"       title="History">⏱</button>
+      <button class="act-btn del"     data-vault-del="${t._id}"  title="Delete forever">🗑</button>`;
+  }
+
+  return `<div class="${cls}" data-id="${t._id}">
+    <div class="priority-dot ${t.priority}" data-quickpri="${t._id}" title="Click to cycle priority"></div>
+    ${!t.archived
+      ? `<div class="todo-check" data-toggle="${t._id}" title="Complete → moves to vault"></div>`
+      : '<div style="width:22px;flex-shrink:0"></div>'}
+    <div class="todo-content">
+      <div class="todo-text">${esc(t.text)}${coinBadge}${wasRolled&&!t.archived?'<span class="carried-over-badge">carried over</span>':''}</div>
+      ${t.archived ? `<div class="archived-date">📦 Archived ${archivedStr}</div>` : ''}
+      ${notesHtml}
+      <div class="todo-chips">
+        <span class="chip chip-cat">${esc(t.category)}</span>
+        <span class="chip chip-${t.priority}">${t.priority}</span>
+        ${dateTxt?`<span class="chip ${over?'chip-overdue':'chip-date'}">📅 ${dateTxt}</span>`:''}
+        ${isAging?`<span class="chip chip-aging">⏳ ${ageInDays}d old</span>`:''}
+        ${(t.tags||[]).map(tg=>`<span class="chip chip-tag">#${esc(tg)}</span>`).join('')}
+        ${subs.length>0?`<span class="chip" style="background:#f0f9ff;color:var(--sky)">☑ ${subsDone}/${subs.length}</span>`:''}
+      </div>
+      ${subtasksHtml}
+    </div>
+    <div class="todo-actions">${actions}</div>
+  </div>`;
+}
+
+function esc(s=''){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function attachEvents() {
+  document.querySelectorAll('[data-toggle]').forEach(el => el.addEventListener('click', e => {
+    e.stopPropagation();
+    const r = el.getBoundingClientRect();
+    toggleTodo(el.dataset.toggle, r.left+r.width/2, r.top+r.height/2);
+  }));
+  document.querySelectorAll('[data-edit]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); openEdit(el.dataset.edit); }));
+  document.querySelectorAll('[data-del]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); deleteTodo(el.dataset.del); }));
+  document.querySelectorAll('[data-vault-del]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); confirmVaultDelete(el.dataset.vaultDel); }));
+  document.querySelectorAll('[data-hist]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); openHistory(el.dataset.hist); }));
+  document.querySelectorAll('[data-archive]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); confirmArchive(el.dataset.archive); }));
+  document.querySelectorAll('[data-restore]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); confirmRestore(el.dataset.restore); }));
+  document.querySelectorAll('[data-quickpri]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); cyclePriority(el.dataset.quickpri); }));
+  // subtasks
+  document.querySelectorAll('[data-sub-toggle]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); const [a,b]=el.dataset.subToggle.split('|'); toggleSubtask(a,b); }));
+  document.querySelectorAll('[data-sub-del]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); const [a,b]=el.dataset.subDel.split('|'); deleteSubtask(a,b); }));
+  document.querySelectorAll('[data-sub-add]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); const row=document.getElementById(`sub-input-${el.dataset.subAdd}`); if(row){row.classList.toggle('visible');if(row.classList.contains('visible'))document.getElementById(`sub-text-${el.dataset.subAdd}`)?.focus();} }));
+  document.querySelectorAll('[data-sub-confirm]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); const tid=el.dataset.subConfirm; const inp=document.getElementById(`sub-text-${tid}`); if(inp?.value.trim()) addSubtask(tid,inp.value.trim()); }));
+  document.querySelectorAll('[data-sub-cancel]').forEach(el => el.addEventListener('click', e => { e.stopPropagation(); document.getElementById(`sub-input-${el.dataset.subCancel}`)?.classList.remove('visible'); }));
+  document.querySelectorAll('.add-subtask-input').forEach(el => el.addEventListener('keydown', e => {
+    if (e.key==='Enter'){e.stopPropagation();const tid=el.id.replace('sub-text-','');if(el.value.trim())addSubtask(tid,el.value.trim());}
+    if (e.key==='Escape') document.getElementById(`sub-input-${el.id.replace('sub-text-','')}`)?.classList.remove('visible');
+  }));
+}
+
+// ── CRUD ────────────────────────────────────────────────────────────────────
+async function addTodo() {
+  const text = document.getElementById('todo-input').value.trim();
+  if (!text) { toast('Please enter a task','err'); return; }
+  const payload = { text, priority: document.getElementById('priority-select').value, category: document.getElementById('category-input').value.trim()||'General', dueDate: document.getElementById('due-input').value||null };
+  try {
+    const d = await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+    document.getElementById('todo-input').value='';
+    document.getElementById('category-input').value='';
+    document.getElementById('due-input').value='';
+    toast('Task added ✦'); fetchTodos();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+async function toggleTodo(id, cx, cy) {
+  try {
+    const d = await fetch(`${API}/${id}/toggle`,{method:'PATCH'}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+
+    if (d.todo.completed) {
+      // Task completed → auto-archived to vault
+      launchConfetti(cx, cy);
+      const c = d.coinResult;
+      if (c) {
+        coinPop(cx, cy-20, c.delta);
+        let msg = `Task done! +${c.delta}🪙`;
+        if (c.subtasksBonus) msg += ` +${c.subtasksBonus}🪙 subtasks bonus`;
+        toast(msg, 'coin');
+      }
+      if (d.firstTaskResult) toast(`🌅 First task of the day! +${d.firstTaskResult.delta}🪙`, 'coin');
+      if (d.streakBonusResult) toast(`🔥 ${d.streakBonusResult.streak}-day streak! +${d.streakBonusResult.delta}🪙`, 'coin');
+      // Update coin UI
+      if (d.coinBalance !== undefined) {
+        updateCoinUI(d.coinBalance, 0, 0);
+        loadCoins(); // refresh full coin data
+      }
+    } else {
+      // Reopened
+      toast('Task restored to active list ↩', 'info');
+      if (d.coinResult?.delta) toast(`Coins adjusted: ${d.coinResult.delta}🪙`, 'info');
+    }
+    fetchTodos(); loadHeatmap();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+async function deleteTodo(id) {
+  try {
+    const d = await fetch(`${API}/${id}`,{method:'DELETE'}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+    toast('Task deleted','info'); fetchTodos();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+async function cyclePriority(id) {
+  const t = todos.find(x=>x._id===id); if (!t||t.archived) return;
+  const next = {low:'medium',medium:'high',high:'low'}[t.priority];
+  try {
+    const d = await fetch(`${API}/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t.text,priority:next,category:t.category,dueDate:t.dueDate?.substring(0,10)||null,tags:t.tags,notes:t.notes})}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+    toast(`Priority → ${next}`,'info'); fetchTodos();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+function confirmArchive(id)  { archivingId     = id; openModal('archive-confirm-overlay'); }
+function confirmRestore(id)  { restoringId     = id; openModal('restore-confirm-overlay'); }
+function confirmVaultDelete(id) { vaultDeletingId = id; openModal('vault-delete-overlay'); }
+
+async function doArchive() {
+  if (!archivingId) return;
+  try {
+    const d = await fetch(`${API}/${archivingId}/archive`,{method:'PATCH'}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+    closeModal('archive-confirm-overlay'); archivingId=null;
+    toast('Archived to vault 🗄️'); fetchTodos();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+async function doRestore() {
+  if (!restoringId) return;
+  try {
+    const d = await fetch(`${API}/${restoringId}/unarchive`,{method:'PATCH'}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+    closeModal('restore-confirm-overlay'); restoringId=null;
+    toast('Restored ↩','info'); fetchTodos();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+async function doVaultDelete() {
+  if (!vaultDeletingId) return;
+  try {
+    const d = await fetch(`${API}/${vaultDeletingId}`,{method:'DELETE'}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+    closeModal('vault-delete-overlay'); vaultDeletingId=null;
+    toast('Permanently deleted 🗑','info'); fetchTodos();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+// ── Subtasks ─────────────────────────────────────────────────────────────────
+async function addSubtask(tid,text){
+  const d=await fetch(`${API}/${tid}/subtasks`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})}).then(r=>r.json()).catch(()=>({success:false}));
+  if(d.success) fetchTodos(); else toast('Error adding subtask','err');
+}
+async function toggleSubtask(tid,sid){
+  const d=await fetch(`${API}/${tid}/subtasks/${sid}/toggle`,{method:'PATCH'}).then(r=>r.json()).catch(()=>({success:false}));
+  if(d.success) fetchTodos();
+}
+async function deleteSubtask(tid,sid){
+  const d=await fetch(`${API}/${tid}/subtasks/${sid}`,{method:'DELETE'}).then(r=>r.json()).catch(()=>({success:false}));
+  if(d.success) fetchTodos();
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+function exportTasks(){
+  const lines=todos.map((t,i)=>{
+    const s=t.archived?'✓':'○';
+    const due=t.dueDate?` [Due: ${new Date(t.dueDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}]`:'';
+    const notes=t.notes?`\n   Notes: ${t.notes}`:'';
+    const subs=(t.subtasks||[]).length?`\n   Subtasks:\n${t.subtasks.map(s=>`     ${s.completed?'✓':'○'} ${s.text}`).join('\n')}`:'';
+    return `${i+1}. [${s}] [${t.priority.toUpperCase()}] ${t.text}${due}\n   Category: ${t.category}${notes}${subs}`;
+  }).join('\n\n');
+  const header=`QuantumDo Export — ${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}\n${'═'.repeat(48)}\nFilter: ${currentFilter.toUpperCase()} | Tasks: ${todos.length}\n\n`;
+  navigator.clipboard.writeText(header+lines).then(()=>toast('Copied 📋','info')).catch(()=>toast('Clipboard unavailable','err'));
+}
+
+// ── New Day ────────────────────────────────────────────────────────────────────
+async function doNewDay(){
+  try {
+    const d=await fetch(`${API}/day/rollover`,{method:'POST'}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+    const banner=document.getElementById('day-banner');
+    document.getElementById('day-banner-text').textContent=d.rolledOver>0?`🌅 ${d.rolledOver} task${d.rolledOver!==1?'s were':' was'} carried over.`:'✅ All tasks are up to date!';
+    banner.style.display='flex';
+    fetchTodos();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+// ── Edit Modal ────────────────────────────────────────────────────────────────
+function openEdit(id){
+  const t=todos.find(x=>x._id===id); if(!t) return;
+  editingId=id;
+  document.getElementById('edit-text').value    =t.text;
+  document.getElementById('edit-priority').value=t.priority;
+  document.getElementById('edit-category').value=t.category;
+  document.getElementById('edit-notes').value   =t.notes||'';
+  document.getElementById('edit-tags').value    =(t.tags||[]).join(', ');
+  document.getElementById('edit-due').value     =t.dueDate?t.dueDate.substring(0,10):'';
+  openModal('edit-overlay');
+}
+async function saveEdit(){
+  if (!editingId) return;
+  const payload={text:document.getElementById('edit-text').value.trim(),priority:document.getElementById('edit-priority').value,category:document.getElementById('edit-category').value.trim()||'General',notes:document.getElementById('edit-notes').value.trim(),tags:document.getElementById('edit-tags').value.split(',').map(t=>t.trim()).filter(Boolean),dueDate:document.getElementById('edit-due').value||null};
+  if (!payload.text){toast('Task text required','err');return;}
+  try {
+    const d=await fetch(`${API}/${editingId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
+    if (!d.success) throw new Error(d.error);
+    closeModal('edit-overlay'); toast('Task updated ✦'); fetchTodos();
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+// ── History Modal (ONLY place passcode is needed) ─────────────────────────────
+const ACTION_ICONS={created:'🌱',completed:'✅',reopened:'🔄',edited:'✏️',priority_changed:'🎯',category_changed:'📁',due_date_changed:'📅',tags_changed:'🏷️',notes_changed:'📝',archived:'🗄️',day_rolled:'🌅',unarchived:'↩️'};
+
+function timeAgo(str){
+  const d=Date.now()-new Date(str).getTime();
+  const m=Math.floor(d/60000),h=Math.floor(d/3600000),days=Math.floor(d/86400000);
+  if(d<60000) return 'just now'; if(m<60) return `${m}m ago`; if(h<24) return `${h}h ago`; if(days<7) return `${days}d ago`;
+  return new Date(str).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+
+async function openHistory(id){
+  const body=document.getElementById('history-body'),titleEl=document.getElementById('history-task-title');
+  body.innerHTML='<div class="history-loading">Loading…</div>'; titleEl.textContent='';
+  openModal('history-overlay');
+
+  const firstTry=await fetch(`${API}/${id}/history`,{headers:historyPasscode?{'x-history-passcode':historyPasscode}:{}}).then(r=>r.json()).catch(()=>({success:false,error:'network'}));
+
+  if (firstTry.locked){
+    titleEl.textContent='Protected by password';
+    body.innerHTML=`<div class="lock-screen"><div class="lock-big">🔐</div><p>Enter your history password<br>to view this task's full log.</p><div class="lock-input-row"><input id="hist-unlock-input" type="password" placeholder="Enter password" autocomplete="off"/><button id="hist-unlock-btn">Unlock</button></div><div class="lock-error" id="hist-lock-error"></div></div>`;
+    document.getElementById('hist-unlock-btn').addEventListener('click', async ()=>{
+      const pc=document.getElementById('hist-unlock-input').value;
+      const errEl=document.getElementById('hist-lock-error'); errEl.textContent='';
+      const retry=await fetch(`${API}/${id}/history`,{headers:{'x-history-passcode':pc}}).then(r=>r.json()).catch(()=>({success:false}));
+      if (retry.locked||!retry.success){errEl.textContent='✕ Incorrect password';return;}
+      historyPasscode=pc; renderHistoryContent(retry,titleEl,body);
+    });
+    document.getElementById('hist-unlock-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('hist-unlock-btn').click();});
+    return;
+  }
+  if (!firstTry.success){body.innerHTML=`<div class="history-empty">Failed: ${esc(firstTry.error)}</div>`;return;}
+  renderHistoryContent(firstTry,titleEl,body);
+}
+
+function renderHistoryContent(d,titleEl,body){
+  titleEl.textContent=d.text;
+  if (!d.history.length){body.innerHTML='<div class="history-empty">No history yet.</div>';return;}
+  const fmt=v=>{if(v===null||v===undefined)return'none';if(typeof v==='boolean')return v?'yes':'no';if(Array.isArray(v))return v.join(', ')||'none';if(typeof v==='object')return JSON.stringify(v);return String(v);};
+  body.innerHTML=`<div class="history-list">${d.history.map(entry=>{
+    const prev=fmt(entry.previousValue),next=fmt(entry.newValue);
+    const diff=(prev!==next&&!['archived','unarchived'].includes(entry.action)&&!(prev==='none'&&next==='none'))?`<div class="h-diff"><span class="h-diff-old">${esc(prev)}</span><span style="color:var(--muted);font-size:10px">→</span><span class="h-diff-new">${esc(next)}</span></div>`:'';
+    return `<div class="history-item">
+      <div class="h-icon ${entry.action}">${ACTION_ICONS[entry.action]||'◎'}</div>
+      <div class="h-body"><div class="h-desc">${esc(entry.description)}</div>${diff}<div class="h-time">${timeAgo(entry.timestamp)} · ${new Date(entry.timestamp).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── Coin History Modal ─────────────────────────────────────────────────────────
+async function openCoinModal(){
+  openModal('coin-overlay');
+  const d=await fetch(`${API}/coins`).then(r=>r.json()).catch(()=>({success:false}));
+  if (!d.success){document.getElementById('coin-ledger-list').innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">Failed to load</div>';return;}
+  document.getElementById('coin-modal-sub').textContent=`Balance: ${d.balance}🪙 · ${d.recent.length} recent transactions`;
+  updateCoinUI(d.balance,d.streak,d.todayEarned);
+  const iconMap={task_complete_low:'🟢',task_complete_medium:'🟡',task_complete_high:'🔴',subtasks_bonus:'☑',streak_bonus:'🔥',first_task_day:'🌅',daily_login:'🪙',task_uncomplete:'↩'};
+  document.getElementById('coin-ledger-list').innerHTML=d.recent.length?d.recent.map(e=>`
+    <div class="coin-entry ${e.delta>0?'positive':'negative'}">
+      <div class="coin-entry-icon">${iconMap[e.type]||'🪙'}</div>
+      <div class="coin-entry-body">
+        <div class="coin-entry-note">${esc(e.note||e.todoText||e.type)}</div>
+        <div class="coin-entry-time">${timeAgo(e.createdAt)} · Bal: ${e.balance}🪙</div>
+      </div>
+      <div class="coin-entry-delta">${e.delta>0?'+':''}${e.delta}🪙</div>
+    </div>`).join(''):'<div style="padding:24px;text-align:center;color:var(--muted)">No transactions yet</div>';
+}
+
+// ── Passcode Modal ─────────────────────────────────────────────────────────────
+async function openPasscodeModal(){
+  ['set-passcode','change-current','change-new'].forEach(id=>document.getElementById(id).value='');
+  ['set-error','change-error'].forEach(id=>{const el=document.getElementById(id);el.textContent='';el.style.display='none';});
+  const status=await fetch(`${API}/passcode/status`).then(r=>r.json()).catch(()=>({isSet:false}));
+  const at=status.isSet?'change-tab':'set-tab';
+  document.querySelectorAll('[data-tab]').forEach(t=>t.classList.toggle('active',t.dataset.tab===at));
+  document.querySelectorAll('#set-tab,#change-tab').forEach(p=>p.classList.toggle('active',p.id===at));
+  openModal('passcode-overlay');
+}
+async function setPasscode(){
+  const pc=document.getElementById('set-passcode').value.trim();
+  const errEl=document.getElementById('set-error'); errEl.style.display='none';
+  const d=await fetch(`${API}/passcode/set`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({passcode:pc})}).then(r=>r.json()).catch(()=>({success:false,error:'Network error'}));
+  if (!d.success){errEl.textContent=d.error;errEl.style.display='block';return;}
+  closeModal('passcode-overlay'); toast('History password set 🔐','info');
+}
+async function changePasscode(){
+  const cur=document.getElementById('change-current').value.trim(),nw=document.getElementById('change-new').value.trim();
+  const errEl=document.getElementById('change-error'); errEl.style.display='none';
+  const d=await fetch(`${API}/passcode/change`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({currentPasscode:cur,newPasscode:nw})}).then(r=>r.json()).catch(()=>({success:false,error:'Network error'}));
+  if (!d.success){errEl.textContent=d.error;errEl.style.display='block';return;}
+  historyPasscode=null; closeModal('passcode-overlay'); toast('History password changed 🔐','info');
+}
+
+// ── Modal helpers ──────────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  if(id==='edit-overlay')editingId=null;
+  if(id==='archive-confirm-overlay')archivingId=null;
+  if(id==='restore-confirm-overlay')restoringId=null;
+  if(id==='vault-delete-overlay')vaultDeletingId=null;
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────────────────────────────
+document.addEventListener('keydown', e=>{
+  const inInput=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+  if(e.key==='Escape'){document.querySelectorAll('.modal-overlay.open').forEach(o=>closeModal(o.id));if(searchQuery){document.getElementById('search-input').value='';searchQuery='';fetchTodos();}return;}
+  if(!inInput&&e.key==='/'){e.preventDefault();document.getElementById('search-input').focus();}
+  if(!inInput&&e.key==='n'){e.preventDefault();document.getElementById('todo-input').focus();}
+});
+
+// ── Event wiring ───────────────────────────────────────────────────────────────
+document.getElementById('add-btn').addEventListener('click', addTodo);
+document.getElementById('todo-input').addEventListener('keydown', e=>{if(e.key==='Enter')addTodo();});
+document.getElementById('export-btn').addEventListener('click', exportTasks);
+document.getElementById('modal-save').addEventListener('click', saveEdit);
+document.getElementById('archive-confirm-btn').addEventListener('click', doArchive);
+document.getElementById('restore-confirm-btn').addEventListener('click', doRestore);
+document.getElementById('vault-delete-confirm-btn').addEventListener('click', doVaultDelete);
+document.getElementById('new-day-btn').addEventListener('click', doNewDay);
+document.getElementById('passcode-btn').addEventListener('click', openPasscodeModal);
+document.getElementById('coin-history-btn').addEventListener('click', openCoinModal);
+document.getElementById('coin-balance').addEventListener('click', openCoinModal);
+document.getElementById('set-passcode-btn').addEventListener('click', setPasscode);
+document.getElementById('change-passcode-btn').addEventListener('click', changePasscode);
+
+document.querySelectorAll('[data-tab]').forEach(tab=>tab.addEventListener('click',()=>{
+  document.querySelectorAll('[data-tab]').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#set-tab,#change-tab').forEach(p=>p.classList.remove('active'));
+  tab.classList.add('active'); document.getElementById(tab.dataset.tab).classList.add('active');
+}));
+
+document.getElementById('stat-archived-card').addEventListener('click',()=>{
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-filter="archived"]').classList.add('active');
+  currentFilter='archived'; fetchTodos();
+});
+
+document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.close)));
+document.querySelectorAll('.modal-overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)closeModal(ov.id);}));
+
+document.querySelectorAll('.filter-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); currentFilter=btn.dataset.filter; fetchTodos();
+}));
+
+let searchTimer;
+document.getElementById('search-input').addEventListener('input',e=>{
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>{searchQuery=e.target.value;fetchTodos();},320);
+});
+
+// ── Init ────────────────────────────────────────────────────────────────────────
+checkHealth();
+setInterval(checkHealth, 15000);
+fetchTodos();
+loadHeatmap();
+loadCoins();
+setInterval(loadHeatmap, 60000);
+setInterval(loadCoins, 30000);
+</script>
+</body>
+</html>
