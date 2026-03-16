@@ -11,7 +11,7 @@ const historySchema = new mongoose.Schema({
     type: String,
     enum: ['created','completed','reopened','edited','priority_changed',
            'category_changed','due_date_changed','tags_changed','notes_changed',
-           'archived','day_rolled','unarchived'],
+           'archived','day_rolled','unarchived','failed'],  // ← 'failed' added
     required: true,
   },
   description:   { type: String, required: true },
@@ -24,6 +24,7 @@ const historySchema = new mongoose.Schema({
 const todoSchema = new mongoose.Schema({
   text:      { type: String, required: true, trim: true, maxlength: 500 },
   completed: { type: Boolean, default: false },
+  failed:    { type: Boolean, default: false },   // ← explicit non-completion flag
   priority:  { type: String, enum: ['low','medium','high'], default: 'medium' },
   category:  { type: String, trim: true, default: 'General' },
   dueDate:   { type: Date, default: null },
@@ -41,5 +42,6 @@ todoSchema.index({ completed: 1, createdAt: -1 });
 todoSchema.index({ priority: 1 });
 todoSchema.index({ archived: 1 });
 todoSchema.index({ dayTag: 1 });
+todoSchema.index({ failed: 1 });
 
 module.exports = mongoose.model('Todo', todoSchema);

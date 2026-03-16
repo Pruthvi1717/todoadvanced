@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Every coin event is logged here for full auditability.
 const coinLedgerSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -12,12 +11,13 @@ const coinLedgerSchema = new mongoose.Schema({
       'streak_bonus',         // +streak×2
       'first_task_day',       // +15 (first completion of the day)
       'daily_login',          // +3  (once per day)
-      'task_uncomplete',      // negative — task reopened
+      'task_uncomplete',      // negative — task reopened (2× penalty)
+      'task_fail',            // negative — task explicitly marked as not completed (2× penalty)
     ],
     required: true,
   },
-  delta:     { type: Number, required: true }, // +/−
-  balance:   { type: Number, required: true }, // balance AFTER this event
+  delta:     { type: Number, required: true },
+  balance:   { type: Number, required: true },
   todoId:    { type: mongoose.Schema.Types.ObjectId, ref: 'Todo', default: null },
   todoText:  { type: String, default: '' },
   note:      { type: String, default: '' },
